@@ -35,8 +35,13 @@ public class Pattern {
   private final String pattern;
 
   protected Pattern(String pattern, int flags) {
-    this.pattern = pattern;
     this.patternFlags = flags;
+    if ("\\\\".equals(pattern)) {
+      this.pattern = "\\";
+      return;
+    }
+
+    this.pattern = pattern;
 
     if (! trivial(pattern)) {
       throw new UnsupportedOperationException
