@@ -505,6 +505,15 @@ Avian_java_lang_String_intern
   return reinterpret_cast<int64_t>(intern(t, this_));
 }
 
+#undef PATH_SEPARATOR
+#ifdef PLATFORM_WINDOWS
+#define FILE_SEPARATOR "\\"
+#define PATH_SEPARATOR ";"
+#else
+#define FILE_SEPARATOR "/"
+#define PATH_SEPARATOR ":"
+#endif
+
 extern "C" JNIEXPORT int64_t JNICALL
 Avian_java_lang_System_getVMProperty
 (Thread* t, object, uintptr_t* arguments)
@@ -525,6 +534,10 @@ Avian_java_lang_System_getVMProperty
     r = reinterpret_cast<int64_t>(makeString(t, AVIAN_VERSION));
   } else if (::strcmp(RUNTIME_ARRAY_BODY(n), "file.encoding") == 0) {
     r = reinterpret_cast<int64_t>(makeString(t, "ASCII"));
+  } else if (::strcmp(RUNTIME_ARRAY_BODY(n), "file.separator") == 0) {
+    r = reinterpret_cast<int64_t>(makeString(t, FILE_SEPARATOR));
+  } else if (::strcmp(RUNTIME_ARRAY_BODY(n), "path.separator") == 0) {
+    r = reinterpret_cast<int64_t>(makeString(t, PATH_SEPARATOR));
   } else {
     const char* v = findProperty(t, RUNTIME_ARRAY_BODY(n));
     if (v) {
