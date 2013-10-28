@@ -1,3 +1,4 @@
+#include <typeinfo>
 /* Copyright (c) 2008-2013, Avian Contributors
 
    Permission to use, copy, modify, and/or distribute this software
@@ -909,6 +910,7 @@ class MyFinder: public Finder {
 
   virtual const char* urlPrefix(const char* name) {
     for (Element* e = path_; e; e = e->next) {
+fprintf(stderr, "looking into %p (next %p) for %s %s\n", e, e->next, name, typeid(e).name());
       unsigned length;
       System::FileType type = e->stat(name, &length, true);
       if (type != System::TypeDoesNotExist) {

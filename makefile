@@ -265,7 +265,7 @@ ifeq ($(use-clang),true)
 	build-cc = clang
 else
 	build-cxx = g++
-	build-cc = gcc
+	build-cc = g++
 endif
 
 mflag =
@@ -317,7 +317,7 @@ warnings = -Wall -Wextra -Werror -Wunused-parameter -Winit-self \
 
 target-cflags = -DTARGET_BYTES_PER_WORD=$(pointer-size)
 
-common-cflags = $(warnings) -fno-rtti -fno-exceptions -I$(classpath-src) \
+common-cflags = $(warnings) -frtti -fno-exceptions -I$(classpath-src) \
 	"-I$(JAVA_HOME)/include" -I$(src) -I$(build) -Iinclude $(classpath-cflags) \
 	-D__STDC_LIMIT_MACROS -D_JNI_IMPLEMENTATION_ -DAVIAN_VERSION=\"$(version)\" \
 	-DAVIAN_INFO="\"$(info)\"" \
@@ -337,7 +337,7 @@ build-cflags = $(common-cflags) -fPIC -fvisibility=hidden \
 	"-I$(JAVA_HOME)/include/linux" -I$(src) -pthread
 
 converter-cflags = -D__STDC_CONSTANT_MACROS -Iinclude/ -Isrc/ \
-	-fno-rtti -fno-exceptions \
+	-frtti -fno-exceptions \
 	-DAVIAN_TARGET_ARCH=AVIAN_ARCH_UNKNOWN \
 	-DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_UNKNOWN \
 	-Wall -Wextra -Werror -Wunused-parameter -Winit-self -Wno-non-virtual-dtor
@@ -1223,7 +1223,7 @@ ifneq ($(lzma),)
 
 	lzma-encoder = $(build)/lzma/lzma
 
-	lzma-encoder-cflags = -D__STDC_CONSTANT_MACROS -fno-rtti -fno-exceptions \
+	lzma-encoder-cflags = -D__STDC_CONSTANT_MACROS -frtti -fno-exceptions \
 		-I$(lzma)/C
 
 	lzma-encoder-sources = \
