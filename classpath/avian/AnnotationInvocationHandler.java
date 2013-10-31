@@ -26,6 +26,6 @@ public class AnnotationInvocationHandler implements InvocationHandler {
         return data[i + 1];
       }
     }
-    throw new IllegalArgumentException();
+    return method.getDefaultValue();
   }
 }
