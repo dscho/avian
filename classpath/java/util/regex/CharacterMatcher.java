@@ -115,6 +115,7 @@ class CharacterMatcher {
       size <<= 1;
     }
     map = java.util.Arrays.copyOf(map, size);
+if (map.length < length) { throw new RuntimeException(); }
   }
 
   private void merge(CharacterMatcher other) {
@@ -163,6 +164,7 @@ class CharacterMatcher {
     }
 
     private int parseEscapedCharacter() {
+if (offset == 0 || description[offset - 1] != '\\') { throw new RuntimeException(); }
       if (offset == description.length) {
         throw new IllegalArgumentException("Short escaped character");
       }

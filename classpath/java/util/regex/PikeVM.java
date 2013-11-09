@@ -258,6 +258,7 @@ if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("une
       head = tail = -1;
     }
 
+    @SuppressWarnings("unused")
     private void assertConsistent() {
       if ((head < 0 || tail < 0) && head != tail) { throw new RuntimeException(); }
       boolean[] visited = new boolean[next.length];
@@ -295,6 +296,112 @@ if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("une
       }
       builder.append("]");
       return builder.toString();
+    }
+
+    @SuppressWarnings("unused")
+    protected void dumpThreads() {
+      int i = 0;
+      for (int pc = head; ; pc = next(pc)) {
+        System.err.print("Thread " + String.format("%03d", i++) + ": pc = "
+          + pc + " (opcode: ");
+        disassemble(pc);
+        System.err.print(", next thread pc: " + next(pc) + "); ");
+        if (offsets[pc] == null) {
+          System.err.print(" NOSTATE");
+        } else {
+          int[] offsets = this.offsets[pc];
+          for (int j = 0; j < offsets.length; j += 2) {
+            System.err.print(" (" + (j / 2) + ": ");
+            if (offsets[j] <= 0) {
+              System.err.print("N/A");
+            } else {
+              System.err.print("" + (offsets[j] - 1) + "-"
+                + (offsets[j + 1] <= 0 ? "?" : "" + (offsets[j + 1] - 1)));
+            }
+            System.err.print(")");
+          }
+        }
+        System.err.println();
+        if (pc == tail) {
+          break;
+        }
+      }
+    }
+  }
+
+  protected int disassemble(int pc) {
+    if (pc == program.length) {
+      System.err.print("<END-OF-PROGRAM>");
+      return pc;
+    }
+    switch(program[pc++]) {
+    case DOT:
+      System.err.print("DOT");
+      break;
+    case DOTALL:
+      System.err.print("DOTALL");
+      break;
+    case WORD_BOUNDARY:
+      System.err.println("WORD_BOUNDARY");
+      break;
+    case NON_WORD_BOUNDARY:
+      System.err.println("NON_WORD_BOUNDARY");
+      break;
+    case LINE_START:
+      System.err.println("LINE_START");
+      break;
+    case LINE_END:
+      System.err.println("LINE_END");
+      break;
+    case CHARACTER_CLASS:
+      System.err.print("CLASS " + program[pc++]);
+      break;
+    case LOOKAHEAD:
+      System.err.print("LOOKAHEAD " + program[pc++]);
+      break;
+    case LOOKBEHIND:
+      System.err.print("LOOKBEHIND " + program[pc++]);
+      break;
+    case NEGATIVE_LOOKAHEAD:
+      System.err.print("NEGATIVE_LOOKAHEAD " + program[pc++]);
+      break;
+    case NEGATIVE_LOOKBEHIND:
+      System.err.print("NEGATIVE_LOOKBEHIND " + program[pc++]);
+      break;
+    case SAVE_OFFSET:
+      System.err.print("SAVE_OFFSET " + program[pc++]);
+      break;
+    case SPLIT:
+      System.err.print("SPLIT " + program[pc++]);
+      break;
+    case SPLIT_JMP:
+      System.err.print("SPLIT_JMP " + program[pc++]);
+      break;
+    case JMP:
+      System.err.print("JMP " + program[pc++]);
+      break;
+    default:
+      if (program[pc - 1] <= 0xffff) {
+        System.err.print("'" + (char)program[pc - 1] + "'");
+        break;
+      }
+      throw new RuntimeException("Unknown opcode: " + program[pc - 1]);
+    }
+    return pc;
+  }
+
+  protected void disassemble() {
+    for (int pc = 0; pc < program.length; ) {
+      System.err.print("    " + String.format("%04d ", pc));
+      pc = disassemble(pc);
+      System.err.println();
+    }
+    for (int i = 0; i < classes.length; ++ i) {
+      System.err.println("Class #" + i + ": " + classes[i]);
+    }
+    for (int i = 0; i < lookarounds.length; ++ i) {
+      System.err.println("Lookaround #" + i);
+      lookarounds[i].disassemble();
     }
   }
 
