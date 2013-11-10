@@ -47,6 +47,10 @@ class PikeVM implements PikeVMOpcodes {
     offsetsCount = 2 * groupCount + 2;
     this.classes = classes;
     this.lookarounds = lookarounds;
+
+    if (debug) {
+      disassemble();
+    }
   }
 
   /**
@@ -298,7 +302,6 @@ if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("une
       return builder.toString();
     }
 
-    @SuppressWarnings("unused")
     protected void dumpThreads() {
       int i = 0;
       for (int pc = head; ; pc = next(pc)) {
@@ -454,8 +457,26 @@ if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("une
       }
 
       char c = i != end ? characters[i] : 0;
+      if (debug) {
+        System.err.println("\n=== Character @" + i + ": '" + c + "' ===");
+      }
       int pc = -1;
       for (;;) {
+        if (debug) {
+          System.err.println("\n== Previous pc: " + pc + " (next: " + current.next(pc) + ") ==");
+          if (!current.isEmpty()) {
+            System.err.println(" Current threads:");
+            current.dumpThreads();
+          }
+          if (!queued.isEmpty()) {
+            System.err.println(" Queued threads:");
+            queued.dumpThreads();
+          }
+          if (!next.isEmpty()) {
+            System.err.println(" Next threads:");
+            next.dumpThreads();
+          }
+        }
         pc = current.next(pc);
         if (pc < 0) {
           pc = queued.queueOneImmediately(current);
@@ -485,6 +506,11 @@ if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("une
         }
 
         int opcode = program[pc];
+        if (debug) {
+          System.err.print("Executing ");
+          disassemble(pc);
+          System.err.println(" @" + pc);
+        }
         switch (opcode) {
         case DOT:
           if (c != '\0' && c != '\r' && c != '\n') {

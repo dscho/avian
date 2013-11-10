@@ -19,6 +19,8 @@ package java.util.regex;
  * @author Johannes Schindelin
  */
 interface PikeVMOpcodes {
+  final static boolean debug = false;
+
   final static int DOT = -1;
   final static int DOTALL = -2;
 

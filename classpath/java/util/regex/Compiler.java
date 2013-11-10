@@ -376,6 +376,9 @@ if (offset != program.length) { throw new RuntimeException(); }
       new CharacterMatcher.Parser(array);
     for (int index = 0; index < array.length; ++ index) {
       char c = array[index];
+      if (debug) {
+        System.err.println("@" + index + ": '" + c + "'");
+      }
       Group current = groups.peek();
       if (regularCharacter.matches(c)) {
         current.push(c);

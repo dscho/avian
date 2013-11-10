@@ -322,6 +322,13 @@ if (offset == 0 || description[offset - 1] != '\\') { throw new RuntimeException
         firstCharacter = false;
       }
 
+      if (PikeVMOpcodes.debug) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(new String(description, 0, offset))
+          .append(" = ").append(matcher);
+        System.err.println("Class: " + builder);
+      }
+
       return matcher;
     }
 
