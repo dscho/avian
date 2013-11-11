@@ -40,6 +40,7 @@ class Compiler implements PikeVMOpcodes {
       lookarounds = new ArrayList<PikeVM>();
       // write it out!
       expr.writeCode(this);
+if (offset != program.length) { throw new RuntimeException(); }
     }
 
     public void add(int opcode) {

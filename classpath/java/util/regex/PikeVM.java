@@ -153,6 +153,7 @@ class PikeVM implements PikeVMOpcodes {
       if (copyThreadState) {
         offsets = java.util.Arrays.copyOf(offsets, offsetsCount);
       }
+if (tail < 0) { throw new RuntimeException("Unexpected"); }
       if (currentPC == tail) {
         tail = nextPC;
       } else {
@@ -251,9 +252,49 @@ class PikeVM implements PikeVMOpcodes {
         int nextPC = next[pc] - 1;
         next[pc] = 0;
         offsets[pc] = null;
+if (pc == tail && nextPC != 0 && nextPC != -1) { throw new RuntimeException("unexpected"); }
         pc = nextPC;
       }
       head = tail = -1;
+    }
+
+    private void assertConsistent() {
+      if ((head < 0 || tail < 0) && head != tail) { throw new RuntimeException(); }
+      boolean[] visited = new boolean[next.length];
+      if (head >= 0) {
+        for (int pc = head; ; pc = next(pc)) {
+          if (pc == next(pc)) { throw new RuntimeException(); }
+          if (visited[pc]) { throw new RuntimeException(); }
+          visited[pc] = true;
+          if (pc == tail) {
+            break;
+          }
+        }
+      }
+      for (int i = 0; i < next.length; ++i) {
+        if (next[i] != 0 && i == tail && !visited[i]) { throw new RuntimeException(); }
+        if (i == tail || next[i] > 0) {
+          if (offsets[i] == null) { throw new RuntimeException(); }
+        } else {
+          if (offsets[i] != null) { throw new RuntimeException(); }
+        }
+      }
+      if (tail >= 0 && next[tail] != 0) { throw new RuntimeException(); }
+    }
+
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append("[");
+      if (head >= 0) {
+        int pc = head;
+        builder.append(pc);
+        while (pc != tail) {
+          pc = next(pc);
+          builder.append(" -> ").append(pc);
+        }
+      }
+      builder.append("]");
+      return builder.toString();
     }
   }
 
@@ -447,6 +488,7 @@ class PikeVM implements PikeVMOpcodes {
       }
       // clean linked thread list (and states)
       current.clean();
+if (!current.isEmpty()) { throw new RuntimeException("failure!"); }
 
       // prepare for next step
       ThreadQueue swap = queued;
