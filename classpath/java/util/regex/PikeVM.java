@@ -699,6 +699,9 @@ if (!current.isEmpty()) { throw new RuntimeException("failure!"); }
    */
   public void reverse() {
     reverse(findPrefixLength, program.length);
+    if (debug) {
+      disassemble();
+    }
   }
 
   /**
@@ -762,6 +765,18 @@ if (!current.isEmpty()) { throw new RuntimeException("failure!"); }
       }
     }
 
+    if (debug) {
+      for (int pc = start; pc < end; pc += length(program[pc])) {
+        if (newJumps[pc] > 0) {
+          System.err.print("" + pc + ": ");
+          for (int jump = newJumps[pc]; jump > 0; jump = newJumps[jump]) {
+            System.err.print(" " + (jump - 1));
+          }
+          System.err.println();
+        }
+      }
+    }
+
     // Pass 2: determine mapped program counters
     int[] mapping = new int[end];
     for (int pc = start, mappedPC = end; mappedPC > 0
@@ -791,6 +806,7 @@ if (!current.isEmpty()) { throw new RuntimeException("failure!"); }
         }
       }
       if (pc == end) {
+if (mappedPC != start) { throw new RuntimeException(); }
         break;
       }
       if (!isJump(program[pc])) {
