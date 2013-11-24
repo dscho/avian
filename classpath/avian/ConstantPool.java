@@ -13,6 +13,7 @@ package avian;
 import static avian.Stream.write1;
 import static avian.Stream.write2;
 import static avian.Stream.write4;
+import static avian.Stream.write8;
 
 import java.util.List;
 import java.io.OutputStream;
@@ -20,6 +21,9 @@ import java.io.IOException;
 
 public class ConstantPool {
   private static final int CONSTANT_Integer = 3;
+  private static final int CONSTANT_Float = 4;
+  private static final int CONSTANT_Long = 5;
+  private static final int CONSTANT_Double = 6;
   private static final int CONSTANT_Utf8 = 1;
   private static final int CONSTANT_String = 8;
   private static final int CONSTANT_Class = 7;
@@ -42,6 +46,18 @@ public class ConstantPool {
 
   public static int addInteger(List<PoolEntry> pool, int value) {
     return add(pool, new IntegerPoolEntry(value));
+  }
+
+  public static int addLong(List<PoolEntry> pool, long value) {
+    return add(pool, new LongPoolEntry(value));
+  }
+
+  public static int addFloat(List<PoolEntry> pool, float value) {
+    return add(pool, new FloatPoolEntry(value));
+  }
+
+  public static int addDouble(List<PoolEntry> pool, double value) {
+    return add(pool, new DoublePoolEntry(value));
   }
 
   public static int addUtf8(List<PoolEntry> pool, String value) {
@@ -104,6 +120,60 @@ public class ConstantPool {
     public boolean equals(Object o) {
       return o instanceof IntegerPoolEntry 
         && ((IntegerPoolEntry) o).value == value;
+    }
+  }
+
+  private static class LongPoolEntry implements PoolEntry {
+    private final long value;
+
+    public LongPoolEntry(long value) {
+      this.value = value;
+    }
+
+    public void writeTo(OutputStream out) throws IOException {
+      write1(out, CONSTANT_Long);
+      write8(out, value);
+    }
+
+    public boolean equals(Object o) {
+      return o instanceof LongPoolEntry
+        && ((LongPoolEntry) o).value == value;
+    }
+  }
+
+  private static class FloatPoolEntry implements PoolEntry {
+    private final float value;
+
+    public FloatPoolEntry(float value) {
+      this.value = value;
+    }
+
+    public void writeTo(OutputStream out) throws IOException {
+      write1(out, CONSTANT_Float);
+      write4(out, Float.floatToIntBits(value));
+    }
+
+    public boolean equals(Object o) {
+      return o instanceof FloatPoolEntry
+        && ((FloatPoolEntry) o).value == value;
+    }
+  }
+
+  private static class DoublePoolEntry implements PoolEntry {
+    private final double value;
+
+    public DoublePoolEntry(double value) {
+      this.value = value;
+    }
+
+    public void writeTo(OutputStream out) throws IOException {
+      write1(out, CONSTANT_Double);
+      write8(out, Double.doubleToLongBits(value));
+    }
+
+    public boolean equals(Object o) {
+      return o instanceof DoublePoolEntry
+        && ((DoublePoolEntry) o).value == value;
     }
   }
 
