@@ -393,7 +393,7 @@ public class Proxy {
            ConstantPool.addUtf8(pool, Classes.toString(m.spec)),
            makeInvokeCode(pool, name, m.spec, m.parameterCount,
                           m.parameterFootprint, i),
-           annotations);
+           annotations, Classes.getAnnotationDefaultValue(loader, m.addendum));
         ++ i;
       }
       
@@ -402,7 +402,7 @@ public class Proxy {
          ConstantPool.addUtf8(pool, "<init>"),
          ConstantPool.addUtf8
          (pool, "(Ljava/lang/reflect/InvocationHandler;)V"),
-         makeConstructorCode(pool), null);
+         makeConstructorCode(pool), null, null);
     }
 
     int nameIndex = ConstantPool.addClass(pool, name);

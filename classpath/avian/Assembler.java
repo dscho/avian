@@ -100,6 +100,17 @@ public class Assembler {
         out2.write(array);
       }
 
+      if (m.annotationDefault != null) {
+        ++ attributeCount;
+        write2(out2, ConstantPool.addUtf8(pool, "AnnotationDefault") + 1);
+        ByteArrayOutputStream out3 = new ByteArrayOutputStream();
+        writeElementValue(out3, pool, m.annotationDefault);
+        out3.close();
+        byte[] array = out3.toByteArray();
+        write4(out2, array.length);
+        out2.write(array);
+      }
+
       out2.close();
       byte[] array = out2.toByteArray();
       if (attributeCount != 1) {
@@ -209,14 +220,16 @@ public class Assembler {
     public final int specIndex;
     public final byte[] code;
     public final Annotation[] annotations;
+    public final Object annotationDefault;
 
     public MethodData(int flags, int nameIndex, int specIndex, byte[] code,
-        Annotation[] annotations) {
+        Annotation[] annotations, Object annotationDefault) {
       this.flags = flags;
       this.nameIndex = nameIndex;
       this.specIndex = specIndex;
       this.code = code;
       this.annotations = annotations;
+      this.annotationDefault = annotationDefault;
     }
   }
 }
