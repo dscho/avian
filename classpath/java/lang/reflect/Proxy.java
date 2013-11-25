@@ -355,29 +355,37 @@ public class Proxy {
     }
 
     Map<String,avian.VMMethod> virtualMap = new HashMap();
+    Map<String,List<Annotation>> annotationMap = new HashMap();
     for (Class c: interfaces) {
       avian.VMMethod[] ivtable = SystemClassLoader.vmClass(c).virtualTable;
       if (ivtable != null) {
         for (avian.VMMethod m: ivtable) {
-          virtualMap.put
-            (Classes.toString(m.name) + Classes.toString(m.spec), m);
+          String key = Classes.toString(m.name) + Classes.toString(m.spec);
+          virtualMap.put(key, m);
+          if (m.hasAnnotations()) {
+            List<Annotation> list = annotationMap.get(key);
+            if (list == null) {
+              list = new ArrayList<Annotation>();
+              annotationMap.put(key, list);
+            }
+            Classes.link(m.class_);
+            Object[] table = (Object[]) m.addendum.annotationTable;
+            for (int j = 0; j < table.length; ++j) {
+              list.add(Classes.getAnnotation(m.class_.loader,
+                (Object[])table[j]));
+            }
+          }
         }
       }
     }
 
     MethodData[] methodTable = new MethodData[virtualMap.size() + 1];
     { int i = 0;
-      for (avian.VMMethod m: virtualMap.values()) {
-        Annotation[] annotations = null;
-        if (m.hasAnnotations()) {
-          Classes.link(m.class_);
-          Object[] table = (Object[]) m.addendum.annotationTable;
-          annotations = new Annotation[table.length];
-          for (int j = 0; j < table.length; ++j) {
-            annotations[j] = Classes.getAnnotation
-              (m.class_.loader, (Object[]) table[j]);
-          }
-        }
+      for (Map.Entry<String, avian.VMMethod> entry: virtualMap.entrySet()) {
+        avian.VMMethod m = entry.getValue();
+        List<Annotation> list = annotationMap.get(entry.getKey());
+        Annotation[] annotations = list == null ? null :
+          list.toArray(new Annotation[list.size()]);
 
         methodTable[i] = new MethodData
           (Modifier.PUBLIC,
