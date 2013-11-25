@@ -16,9 +16,12 @@ import static avian.Stream.write4;
 
 import avian.ConstantPool.PoolEntry;
 
-import java.util.List;
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Assembler {
   public static final int ACC_PUBLIC       = 1 <<  0;
@@ -65,6 +68,28 @@ public class Assembler {
   {
     int codeAttributeName = ConstantPool.addUtf8(pool, "Code");
 
+    // Write the methods' attributes first so that all required constants
+    // are in the constant pool before the pool is written out
+    Map<MethodData, byte[]> methodAttributes =
+      new HashMap<MethodData, byte[]>();
+    for (MethodData m: methods) {
+      int attributeCount = 1;
+      ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+
+      write2(out2, attributeCount);
+
+      write2(out2, codeAttributeName + 1);
+      write4(out2, m.code.length);
+      out2.write(m.code);
+
+      out2.close();
+      byte[] array = out2.toByteArray();
+      if (attributeCount != 1) {
+        array[1] = (byte)attributeCount;
+      }
+      methodAttributes.put(m, array);
+    }
+
     write4(out, 0xCAFEBABE);
     write2(out, 0); // minor version
     write2(out, 0); // major version
@@ -91,10 +116,7 @@ public class Assembler {
       write2(out, m.nameIndex + 1);
       write2(out, m.specIndex + 1);
 
-      write2(out, 1); // attribute count
-      write2(out, codeAttributeName + 1);
-      write4(out, m.code.length);
-      out.write(m.code);
+      out.write(methodAttributes.get(m));
     }
 
     write2(out, 0); // attribute count
