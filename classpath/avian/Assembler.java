@@ -19,6 +19,9 @@ import avian.ConstantPool.PoolEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +85,21 @@ public class Assembler {
       write4(out2, m.code.length);
       out2.write(m.code);
 
+      if (m.annotations != null && m.annotations.length > 0) {
+        ++ attributeCount;
+        write2(out2, ConstantPool.addUtf8(pool,
+          "RuntimeVisibleAnnotations") + 1);
+        ByteArrayOutputStream out3 = new ByteArrayOutputStream();
+        write2(out3, m.annotations.length);
+        for (Annotation annotation : m.annotations) {
+          writeAnnotation(out3, pool, annotation);
+        }
+        out3.close();
+        byte[] array = out3.toByteArray();
+        write4(out2, array.length);
+        out2.write(array);
+      }
+
       out2.close();
       byte[] array = out2.toByteArray();
       if (attributeCount != 1) {
@@ -122,17 +140,83 @@ public class Assembler {
     write2(out, 0); // attribute count
   }
 
+  private static void writeElementValue(OutputStream out,
+    List<PoolEntry> pool, Object value) throws IOException
+  {
+    Class type = value.getClass();
+    if (type == Boolean.TYPE || type == Boolean.class) {
+      write1(out, 'Z');
+      write2(out, ConstantPool.addInteger(pool, (Boolean)value ? 1 : 0) + 1);
+    } else if (type == Byte.TYPE || type == Byte.class) {
+      write1(out, 'B');
+      write2(out, ConstantPool.addInteger(pool, (int)(Byte)value) + 1);
+    } else if (type == Character.TYPE || type == Character.class) {
+      write1(out, 'C');
+      write2(out, ConstantPool.addInteger(pool, (int)(Character)value) + 1);
+    } else if (type == Short.TYPE || type == Short.class) {
+      write1(out, 'S');
+      write2(out, ConstantPool.addInteger(pool, (int)(Short)value) + 1);
+    } else if (type == Integer.TYPE || type == Integer.class) {
+      write1(out, 'I');
+      write2(out, ConstantPool.addInteger(pool, (int)(Integer)value) + 1);
+    } else if (type == Float.TYPE || type == Float.class) {
+      write1(out, 'F');
+      write2(out, ConstantPool.addFloat(pool, (float)(Float)value) + 1);
+    } else if (type == Long.TYPE || type == Long.class) {
+      write1(out, 'J');
+      write2(out, ConstantPool.addLong(pool, (long)(Long)value) + 1);
+    } else if (type == Double.TYPE || type == Double.class) {
+      write1(out, 'D');
+      write2(out, ConstantPool.addDouble(pool, (double)(Double)value) + 1);
+    } else if (type == String.class) {
+      write1(out, 's');
+      write2(out, ConstantPool.addUtf8(pool, (String)value) + 1);
+    } else {
+      throw new RuntimeException("TODO: @ and [: " + type.getName());
+    }
+  }
+
+  private static void writeAnnotation(OutputStream out,
+    List<PoolEntry> pool, Annotation annotation) throws IOException
+  {
+    Class annotationClass = annotation.getClass();
+    // the annotation might be a proxy instance
+    if (!annotationClass.isInterface()) {
+      for (Class iface : annotationClass.getInterfaces()) {
+        if (iface != Annotation.class && Annotation.class.isAssignableFrom(iface)) {
+          annotationClass = iface;
+        }
+      }
+    }
+    String typeName =
+      "L" + annotationClass.getName().replace('.', '/') + ";";
+    write2(out, ConstantPool.addUtf8(pool, typeName) + 1);
+    Method[] methods = annotationClass.getMethods();
+    write2(out, methods.length);
+    for (Method method : methods) try {
+      write2(out, ConstantPool.addUtf8(pool, method.getName()) + 1);
+      writeElementValue(out, pool, method.invoke(annotation));
+    } catch (InvocationTargetException e) {
+      throw new IOException(e);
+    } catch (IllegalAccessException e) {
+      throw new IOException(e);
+    }
+  }
+
   public static class MethodData {
     public final int flags;
     public final int nameIndex;
     public final int specIndex;
     public final byte[] code;
+    public final Annotation[] annotations;
 
-    public MethodData(int flags, int nameIndex, int specIndex, byte[] code) {
+    public MethodData(int flags, int nameIndex, int specIndex, byte[] code,
+        Annotation[] annotations) {
       this.flags = flags;
       this.nameIndex = nameIndex;
       this.specIndex = specIndex;
       this.code = code;
+      this.annotations = annotations;
     }
   }
 }

@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 
 public class Proxy {
   private static int nextNumber;
@@ -367,12 +368,24 @@ public class Proxy {
     MethodData[] methodTable = new MethodData[virtualMap.size() + 1];
     { int i = 0;
       for (avian.VMMethod m: virtualMap.values()) {
+        Annotation[] annotations = null;
+        if (m.hasAnnotations()) {
+          Classes.link(m.class_);
+          Object[] table = (Object[]) m.addendum.annotationTable;
+          annotations = new Annotation[table.length];
+          for (int j = 0; j < table.length; ++j) {
+            annotations[j] = Classes.getAnnotation
+              (m.class_.loader, (Object[]) table[j]);
+          }
+        }
+
         methodTable[i] = new MethodData
           (Modifier.PUBLIC,
            ConstantPool.addUtf8(pool, Classes.toString(m.name)),
            ConstantPool.addUtf8(pool, Classes.toString(m.spec)),
            makeInvokeCode(pool, name, m.spec, m.parameterCount,
-                          m.parameterFootprint, i));
+                          m.parameterFootprint, i),
+           annotations);
         ++ i;
       }
       
@@ -381,7 +394,7 @@ public class Proxy {
          ConstantPool.addUtf8(pool, "<init>"),
          ConstantPool.addUtf8
          (pool, "(Ljava/lang/reflect/InvocationHandler;)V"),
-         makeConstructorCode(pool));
+         makeConstructorCode(pool), null);
     }
 
     int nameIndex = ConstantPool.addClass(pool, name);

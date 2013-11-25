@@ -99,7 +99,7 @@ public class Subroutine {
        { new MethodData(Assembler.ACC_STATIC | Assembler.ACC_PUBLIC,
                         ConstantPool.addUtf8(pool, "test"),
                         ConstantPool.addUtf8(pool, "()V"),
-                        makeTestCode(pool)) });
+                        makeTestCode(pool), null) });
 
     return new MyClassLoader(Subroutine.class.getClassLoader())
       .defineClass(name, out.toByteArray());
