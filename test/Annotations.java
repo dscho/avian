@@ -29,7 +29,7 @@ public class Annotations {
     Method noAnno = Annotations.class.getMethod("noAnnotation");
     expect(noAnno.getAnnotation(Test.class) == null);
     expect(noAnno.getAnnotations().length == 0);
-    testProxyDefaultValue();
+    testComplexAnnotation();
   }
 
   @Test("couscous")
@@ -50,11 +50,9 @@ public class Annotations {
     int hello();
   }
 
-  public static void testProxyDefaultValue() throws Exception {
-    ClassLoader loader = Annotations.class.getClassLoader();
-    Class clazz = Proxy.getProxyClass(loader, new Class[] { World.class });
-    TestComplex annotation = (TestComplex)
-      clazz.getMethod("hello").getAnnotation(TestComplex.class);
+  private static void testComplexAnnotation(TestComplex annotation)
+    throws Exception
+  {
     expect(2 == annotation.arrayValue().length);
     expect("Hello, world!".equals(annotation.arrayValue()[0].value()));
     expect("7/9".equals(annotation.arrayValue()[1].value()));
@@ -62,5 +60,22 @@ public class Annotations {
     expect('7' == annotation.charValue());
     expect(0.7778 == annotation.doubleValue());
     expect(TestInteger.class == annotation.classValue());
+  }
+
+  public static void testComplexAnnotation() throws Exception {
+    ClassLoader loader = Annotations.class.getClassLoader();
+    TestComplex annotation = (TestComplex)
+      World.class.getMethod("hello").getAnnotation(TestComplex.class);
+    testComplexAnnotation(annotation);
+    Class clazz = Proxy.getProxyClass(loader, new Class[] { World.class });
+    annotation = (TestComplex)
+      clazz.getMethod("hello").getAnnotation(TestComplex.class);
+for (java.lang.annotation.Annotation a : clazz.getMethod("hello").getAnnotations()) {
+System.err.println("a: " + a);
+}
+clazz = Proxy.getProxyClass(loader, new Class[] { TestComplex.class });
+    annotation = (TestComplex)
+      clazz.getMethod("hello").getAnnotation(TestComplex.class);
+    testComplexAnnotation(annotation);
   }
 }
