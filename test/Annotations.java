@@ -70,6 +70,7 @@ public class Annotations {
     Class clazz = Proxy.getProxyClass(loader, new Class[] { World.class });
     annotation = (TestComplex)
       clazz.getMethod("hello").getAnnotation(TestComplex.class);
+    expect(annotation == null);
 for (java.lang.annotation.Annotation a : clazz.getMethod("hello").getAnnotations()) {
 System.err.println("a: " + a);
 }
