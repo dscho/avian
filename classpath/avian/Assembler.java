@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -182,6 +183,13 @@ public class Assembler {
     } else if (type == String.class) {
       write1(out, 's');
       write2(out, ConstantPool.addUtf8(pool, (String)value) + 1);
+    } else if (type.isArray()) {
+      int length = Array.getLength(value);
+      write1(out, '[');
+      write2(out, length);
+      for (int i = 0; i < length; ++ i) {
+        writeElementValue(out, pool, Array.get(value, i));
+      }
     } else {
       throw new RuntimeException("TODO: @ and [: " + type.getName());
     }
