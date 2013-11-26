@@ -74,9 +74,16 @@ public class Annotations {
 for (java.lang.annotation.Annotation a : clazz.getMethod("hello").getAnnotations()) {
 System.err.println("a: " + a);
 }
-clazz = Proxy.getProxyClass(loader, new Class[] { TestComplex.class });
-    annotation = (TestComplex)
-      clazz.getMethod("hello").getAnnotation(TestComplex.class);
-    testComplexAnnotation(annotation);
+java.lang.reflect.InvocationHandler handler = new java.lang.reflect.InvocationHandler() {
+	public Object invoke(Object proxy, Method method, Object... args) throws Throwable {
+		System.err.println("calling method " + method.getName());
+		if (method.getDeclaringClass() != Test.class) {
+			throw new RuntimeException("Declaring class is " + method.getDeclaringClass().getName() + " instead of " + Test.class.getName());
+		}
+		return method.getDefaultValue();
+	}
+};
+    Test test = (Test)Proxy.newProxyInstance(loader, new Class[] { Test.class }, handler);
+    expect("Hello, world!".equals(test.value()));
   }
 }
