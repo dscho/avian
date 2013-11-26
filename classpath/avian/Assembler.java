@@ -185,9 +185,11 @@ public class Assembler {
       write2(out, ConstantPool.addUtf8(pool, (String)value) + 1);
     } else if (type.isArray()) {
       int length = Array.getLength(value);
+System.err.println("length of " + value + " of type " + type + " is " + length);
       write1(out, '[');
       write2(out, length);
       for (int i = 0; i < length; ++ i) {
+System.err.println("writing element " + i + ": " + Array.get(value, i));
         writeElementValue(out, pool, Array.get(value, i));
       }
     } else {
