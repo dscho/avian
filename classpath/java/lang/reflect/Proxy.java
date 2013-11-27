@@ -99,6 +99,24 @@ public class Proxy {
 
     write1(out, aload_0);
     
+write1(out, getstatic);
+write2(out, ConstantPool.addFieldRef
+       (pool, "java/lang/System",
+        "err", "Ljava/io/PrintStream;") + 1);
+write1(out, aload_0);
+write1(out, invokevirtual);
+write2(out, ConstantPool.addMethodRef
+       (pool, "java/io/PrintStream",
+        "println", "(Ljava/lang/Object;)V") + 1);
+/*
+write1(out, ldc_w);
+write2(out, ConstantPool.addInteger(pool, 1) + 1);
+write1(out, invokestatic);
+write2(out, ConstantPool.addMethodRef
+       (pool, "java/lang/System",
+        "exit", "(I)V") + 1);
+*/
+
     write1(out, aload_0);
     write1(out, getfield);
     write2(out, ConstantPool.addFieldRef

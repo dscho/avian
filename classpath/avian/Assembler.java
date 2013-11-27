@@ -37,6 +37,7 @@ public class Assembler {
   public static final int dup = 0x59;
   public static final int fload = 0x17;
   public static final int freturn = 0xae;
+  public static final int getstatic = 0xb2;
   public static final int getfield = 0xb4;
   public static final int goto_ = 0xa7;
   public static final int iload = 0x15;
