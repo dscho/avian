@@ -104,6 +104,7 @@ public class Proxy {
     write2(out, ConstantPool.addFieldRef
            (pool, className,
             "methodRefs", "[Ljava/lang/reflect/Method;") + 1);
+    write1(out, ldc_w);
     write2(out, ConstantPool.addInteger(pool, index) + 1);
     write1(out, aaload);
 
