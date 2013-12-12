@@ -298,8 +298,8 @@ public class ObjectInputStream extends InputStream implements DataInput {
       return s;
     }
     if (c == TC_REFERENCE) {
-      int handle = rawInt();
-      return references.get(handle - HANDLE_OFFSET);
+      int handle = rawInt() - HANDLE_OFFSET;
+      return references.get(handle);
     }
     if (c != TC_OBJECT) {
       throw new IOException("Unexpected token: 0x"
