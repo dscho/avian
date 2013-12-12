@@ -412,6 +412,9 @@ public class ObjectInputStream extends InputStream implements DataInput {
     int c = rawByte();
     if (c == TC_CLASSDESC) {
       result.superClassDesc = classDesc();
+    } else if (c == TC_REFERENCE) {
+      int handle = rawInt() - HANDLE_OFFSET;
+      result.superClassDesc = (ClassDesc) references.get(handle);
     } else if (c != TC_NULL) {
       throw new UnsupportedOperationException("Unexpected token: 0x"
           + Integer.toHexString(c));
